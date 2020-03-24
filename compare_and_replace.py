@@ -10,13 +10,25 @@ import sys, os, stat, filecmp, shutil, fnmatch
 from collections import defaultdict
 
 def main():
-    argv = sys.argv
+    argv = sys.argv[:]
     executable = argv.pop(0)
-    if argv[0] == '-d':
-        argv.pop(0)
-        common_dir_prefix = argv.pop(0)
-    else:
-        common_dir_prefix = None
+
+    global quiet
+    quiet = False
+    common_dir_prefix = None
+    while True:
+        if argv[0] == '-d':
+            argv.pop(0)
+            common_dir_prefix = argv.pop(0)
+        elif argv[0] == '-q':
+            argv.pop(0)
+            quiet = True
+        else:
+            break
+
+    if quiet:
+        global n_files_quietly_same
+        n_files_quietly_same = 0
 
     for arg in argv:
         if common_dir_prefix:
@@ -66,8 +78,14 @@ def main():
         else:
             assert 0, cur_type
 
+    if quiet:
+        stderr(f"No change in {n_files_quietly_same} files")
+
 def get_type(path):
     stat_result = os.lstat(path)
+    # lstat = don't follow symlinks. 
+    # We could follow symlinks, but that gets more complicated
+    # if you want to install the new content.
     if stat.S_ISDIR(stat_result.st_mode):
         return 'dir'
     elif stat.S_ISREG(stat_result.st_mode):
@@ -78,7 +96,11 @@ def get_type(path):
 def handle_files(cur_path, new_path):
     if filecmp.cmp(cur_path, new_path, shallow=False):
         # same content
-        stderr(f'No change from {cur_path}')
+        if quiet:
+            global n_files_quietly_same
+            n_files_quietly_same += 1
+        else:
+            stderr(f'No change from {cur_path}')
         os.remove(new_path)
     else:
         # different content
