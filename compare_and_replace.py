@@ -8,7 +8,6 @@
 
 import sys, os, stat, filecmp, shutil, fnmatch
 from collections import defaultdict
-import misc
 
 def main():
     argv = sys.argv
