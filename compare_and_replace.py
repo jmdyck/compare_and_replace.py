@@ -187,12 +187,15 @@ def handle_dirs(cur_root, new_root):
 
     while True:
         stderr()
-        response = get_input("select a group to examine [dcal] or 'y' to install the new or 'n' to skip it:", 'd c a l y n'.split())
+        response = get_input("select a group to examine [dcal] or 'y' to install the new or 'n' to skip it:", 'd c a l y n q'.split())
         if response == 'y':
             stderr(f"installing {new_root}...")
             shutil.rmtree(cur_root)
             os.rename(new_root, cur_root)
             return
+        elif response == 'q':
+            stderr(f"quitting...")
+            sys.exit()
         elif response == 'n':
             stderr(f"skipping {new_root}...")
             return
