@@ -83,11 +83,25 @@ def handle_files(cur_path, new_path):
     else:
         # different content
         gdiff(cur_path, new_path)
-        response = get_input(f"update {cur_path} ?", ['y', 'n', 'q'])
+        response = get_input(f"update {cur_path} ?", ['y', 'b', 'n', 'q'])
         if response == 'y':
             os.rename(new_path, cur_path)
+
+        elif response == 'b':
+            bak_path = cur_path + '.bak'
+            # remove any previous backup
+            if os.path.isdir(bak_path):
+                shutil.rmtree(bak_path)
+            elif os.path.exists(bak_path):
+                os.remove(bak_path)
+            # backup the current content
+            os.rename(cur_path, bak_path)
+            # install the new
+            os.rename(new_path, cur_path)
+
         elif response == 'n':
             stderr('(not overwriting)')
+
         elif response == 'q':
             sys.exit(1)
         else:
